@@ -1,0 +1,66 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: Demo for CodeBuild running Java on ARM CPU Architecture
+
+Parameters:
+  SourceLocation:
+    Type: String
+    Default: https://github.com/symphoniacloud/codebuild-arm-java-demo
+
+  CodeBuildProjectName:
+    Type: String
+    Default: CodeBuildARMJavaDemo
+
+Resources:
+  CodeBuildProject:
+    Type: AWS::CodeBuild::Project
+    Properties:
+      Name: !Ref CodeBuildProjectName
+      Environment:
+        # At time of writing this is the only ARM ComputeType available
+        ComputeType: BUILD_GENERAL1_LARGE
+        Image: aws/codebuild/amazonlinux2-aarch64-standard:2.0
+        Type: ARM_CONTAINER
+      Source:
+        # Assumes a `AWS::CodeBuild::SourceCredential` is deployed elsewhere in this account + region
+        Type: GITHUB
+        Location: !Ref SourceLocation
+        BuildSpec: |
+          version: 0.2
+
+          phases:
+            install:
+              runtime-versions:
+                java: corretto11
+            build:
+              commands:
+                - mvn compile exec:java
+      Triggers:
+        Webhook: true
+        FilterGroups:
+          - - Type: EVENT
+              Pattern: PUSH
+            - Type: HEAD_REF
+              Pattern: '^refs/heads/main$'
+      ServiceRole: !Ref CodeBuildRole
+      Artifacts:
+        Type: NO_ARTIFACTS
+
+  CodeBuildRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          Effect: Allow
+          Principal:
+            Service: codebuild.amazonaws.com
+          Action: sts:AssumeRole
+      Policies:
+        - PolicyName: CodeBuildPolicy
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Effect: Allow
+                Action:
+                  - logs:*
+                Resource: '*'
