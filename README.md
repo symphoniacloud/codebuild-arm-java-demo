@@ -1,5 +1,7 @@
 # codebuild-arm-java-demo
 
+**THIS REPOSITORY IS ARCHIVED AND UNMAINTANED. IT MAY NO LONGER WORK WITH RELEVANT DEPENDENCIES AND SERVICES. IT MAY SPECIFY INSECURE LIBRARY DEPENDENCIES.**
+
 This is a demonstration / sample for running Java on AWS CodeBuild with an ARM CPU.
 Why?
 Because cloud workloads are starting to shift to ARM, and this shows doing so with Java is another step along in its evolution!
